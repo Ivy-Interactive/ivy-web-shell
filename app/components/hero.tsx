@@ -50,8 +50,8 @@ export async function Hero() {
         </Link>
 
         <h1 className="max-w-[755px] text-balance text-5xl font-semibold leading-tight tracking-tight sm:text-6xl">
-          Friction-less{' '}
-          <span className="text-accent">collaboration with AI</span>
+          <span className="text-accent">Friction-less</span>{' '}
+          collaboration with AI
         </h1>
 
         <p className="mt-6 max-w-[573px] text-balance text-lg text-muted-foreground">
