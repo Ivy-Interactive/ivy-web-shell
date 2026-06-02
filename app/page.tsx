@@ -1,3 +1,4 @@
+import { BackgroundMusic } from '~/components/background-music';
 import { DownloadCtaSection } from '~/components/download-cta';
 import { FaqTeaserSection } from '~/components/faq-teaser';
 import { Footer } from '~/components/footer';
@@ -11,6 +12,7 @@ import { TendrilMockupSection } from '~/components/tendril-mockup';
 export default function HomePage() {
   return (
     <div className="flex min-h-screen flex-col">
+      <BackgroundMusic />
       <SiteHeader />
       <main className="flex-1">
         <Hero />
