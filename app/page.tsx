@@ -5,6 +5,7 @@ import { GetInvolvedSection } from '~/components/get-involved';
 import { Hero } from '~/components/hero';
 import { ProblemWeSolveSection } from '~/components/problem-we-solve';
 import { SiteHeader } from '~/components/site-header';
+import { TeamSection } from '~/components/team';
 import { TendrilMockupSection } from '~/components/tendril-mockup';
 
 export default function HomePage() {
@@ -17,6 +18,7 @@ export default function HomePage() {
         <TendrilMockupSection />
         <DownloadCtaSection />
         <GetInvolvedSection />
+        <TeamSection />
         <FaqTeaserSection />
       </main>
       <Footer />
