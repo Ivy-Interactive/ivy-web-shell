@@ -40,7 +40,7 @@ export function SiteHeader() {
           </Link>
           <Link
             href="#getting-started"
-            className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
+            className="rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
           >
             Download Tendril
           </Link>
