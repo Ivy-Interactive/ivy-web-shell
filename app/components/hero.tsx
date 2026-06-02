@@ -1,7 +1,33 @@
 import Link from 'next/link';
 import { Star } from 'lucide-react';
 
-export function Hero() {
+async function fetchStarCount(): Promise<number | null> {
+  try {
+    const response = await fetch(
+      'https://api.github.com/repos/Ivy-Interactive/Ivy-Tendril',
+      { next: { revalidate: 3600 } }
+    );
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data.stargazers_count;
+  } catch {
+    return null;
+  }
+}
+
+function formatStarCount(count: number): string {
+  if (count >= 1000) {
+    return `${(count / 1000).toFixed(1)}k`;
+  }
+  return count.toString();
+}
+
+export async function Hero() {
+  const starCount = await fetchStarCount();
+  const starText = starCount
+    ? `Star us on GitHub · ${formatStarCount(starCount)}`
+    : 'Star us on GitHub';
+
   return (
     <section className="relative overflow-hidden border-b border-border">
       {/* Static stand-in for the WebGL "norrsken" aurora background */}
@@ -19,8 +45,8 @@ export function Hero() {
           href="https://github.com/Ivy-Interactive/Ivy-Tendril"
           className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-muted/50 px-4 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
-          <Star className="h-3.5 w-3.5 text-accent" />
-          Star us on GitHub
+          <Star className="h-3.5 w-3.5 text-accent" fill="currentColor" />
+          {starText}
         </Link>
 
         <h1 className="max-w-[755px] text-balance text-5xl font-semibold leading-tight tracking-tight sm:text-6xl">
