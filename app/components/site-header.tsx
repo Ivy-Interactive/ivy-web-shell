@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 const NAV_ITEMS = [
+  { label: 'Dashboard', href: '/dashboard' },
   { label: 'Product', href: '/product' },
   { label: 'Resources', href: '/resources' },
   { label: 'About', href: '/about' },
