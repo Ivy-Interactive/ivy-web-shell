@@ -15,12 +15,16 @@ export default function DashboardPage() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [stateFilter, setStateFilter] = useState('All');
+  const [projectFilter, setProjectFilter] = useState('All');
 
   useEffect(() => {
     async function fetchPlans() {
       try {
         setLoading(true);
-        const response = await fetch('/api/plans');
+        const url = projectFilter !== 'All'
+          ? `/api/plans?project=${encodeURIComponent(projectFilter)}`
+          : '/api/plans';
+        const response = await fetch(url);
         if (response.ok) {
           const data = await response.json();
           setPlans(data);
@@ -32,11 +36,13 @@ export default function DashboardPage() {
       }
     }
     fetchPlans();
-  }, []);
+  }, [projectFilter]);
 
   const filteredPlans = stateFilter === 'All'
     ? plans
     : plans.filter(p => p.state === stateFilter);
+
+  const projects = [...new Set(plans.map(p => p.project))].sort();
 
   const completedCount = plans.filter(p => p.state === 'Completed').length;
   const skippedCount = plans.filter(p => p.state === 'Skipped').length;
@@ -62,24 +68,42 @@ export default function DashboardPage() {
           <p className="mt-2 text-muted-foreground">Plans created in the last week</p>
         </div>
 
-        <div className="mb-6">
-          <label htmlFor="stateFilter" className="mr-2 text-sm font-medium text-foreground">
-            Filter by state:
-          </label>
-          <select
-            id="stateFilter"
-            value={stateFilter}
-            onChange={(e) => setStateFilter(e.target.value)}
-            className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
-          >
-            <option value="All">All</option>
-            <option value="Completed">Completed</option>
-            <option value="Draft">Draft</option>
-            <option value="Skipped">Skipped</option>
-            <option value="Failed">Failed</option>
-            <option value="Executing">Executing</option>
-            <option value="Building">Building</option>
-          </select>
+        <div className="mb-6 flex flex-wrap gap-4">
+          <div>
+            <label htmlFor="projectFilter" className="mr-2 text-sm font-medium text-foreground">
+              Filter by project:
+            </label>
+            <select
+              id="projectFilter"
+              value={projectFilter}
+              onChange={(e) => setProjectFilter(e.target.value)}
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
+            >
+              <option value="All">All</option>
+              {projects.map(project => (
+                <option key={project} value={project}>{project}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="stateFilter" className="mr-2 text-sm font-medium text-foreground">
+              Filter by state:
+            </label>
+            <select
+              id="stateFilter"
+              value={stateFilter}
+              onChange={(e) => setStateFilter(e.target.value)}
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
+            >
+              <option value="All">All</option>
+              <option value="Completed">Completed</option>
+              <option value="Draft">Draft</option>
+              <option value="Skipped">Skipped</option>
+              <option value="Failed">Failed</option>
+              <option value="Executing">Executing</option>
+              <option value="Building">Building</option>
+            </select>
+          </div>
         </div>
 
         <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
