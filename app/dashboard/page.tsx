@@ -16,12 +16,30 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [stateFilter, setStateFilter] = useState('All');
+  const [projectFilter, setProjectFilter] = useState('All');
+
+  // Initialize date range: 7 days ago to today
+  const getDefaultFromDate = () => {
+    const date = new Date();
+    date.setDate(date.getDate() - 7);
+    return date.toISOString().split('T')[0];
+  };
+  const getDefaultToDate = () => new Date().toISOString().split('T')[0];
+
+  const [fromDate, setFromDate] = useState(getDefaultFromDate());
+  const [toDate, setToDate] = useState(getDefaultToDate());
 
   const fetchPlans = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch('/api/plans');
+      const params = new URLSearchParams();
+      params.append('from', fromDate);
+      params.append('to', toDate);
+      if (projectFilter !== 'All') {
+        params.append('project', projectFilter);
+      }
+      const response = await fetch(`/api/plans?${params.toString()}`);
       if (response.ok) {
         const data = await response.json();
         setPlans(data);
@@ -38,11 +56,13 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchPlans();
-  }, []);
+  }, [fromDate, toDate, projectFilter]);
 
   const filteredPlans = stateFilter === 'All'
     ? plans
     : plans.filter(p => p.state === stateFilter);
+
+  const projects = [...new Set(plans.map(p => p.project))].sort();
 
   const completedCount = plans.filter(p => p.state === 'Completed').length;
   const skippedCount = plans.filter(p => p.state === 'Skipped').length;
@@ -65,7 +85,9 @@ export default function DashboardPage() {
       <div className="mx-auto max-w-7xl">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-foreground">Jobs Dashboard</h1>
-          <p className="mt-2 text-muted-foreground">Plans created in the last week</p>
+          <p className="mt-2 text-muted-foreground">
+            Plans from {fromDate} to {toDate}
+          </p>
         </div>
 
         {error && (
@@ -80,24 +102,69 @@ export default function DashboardPage() {
           </div>
         )}
 
-        <div className="mb-6">
-          <label htmlFor="stateFilter" className="mr-2 text-sm font-medium text-foreground">
-            Filter by state:
-          </label>
-          <select
-            id="stateFilter"
-            value={stateFilter}
-            onChange={(e) => setStateFilter(e.target.value)}
-            className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
-          >
-            <option value="All">All</option>
-            <option value="Completed">Completed</option>
-            <option value="Draft">Draft</option>
-            <option value="Skipped">Skipped</option>
-            <option value="Failed">Failed</option>
-            <option value="Executing">Executing</option>
-            <option value="Building">Building</option>
-          </select>
+        <div className="mb-6 flex flex-wrap items-center gap-4">
+          <div>
+            <label htmlFor="fromDate" className="mr-2 text-sm font-medium text-foreground">
+              From:
+            </label>
+            <input
+              type="date"
+              id="fromDate"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground [color-scheme:dark]"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="toDate" className="mr-2 text-sm font-medium text-foreground">
+              To:
+            </label>
+            <input
+              type="date"
+              id="toDate"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground [color-scheme:dark]"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="projectFilter" className="mr-2 text-sm font-medium text-foreground">
+              Filter by project:
+            </label>
+            <select
+              id="projectFilter"
+              value={projectFilter}
+              onChange={(e) => setProjectFilter(e.target.value)}
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
+            >
+              <option value="All">All</option>
+              {projects.map(project => (
+                <option key={project} value={project}>{project}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="stateFilter" className="mr-2 text-sm font-medium text-foreground">
+              Filter by state:
+            </label>
+            <select
+              id="stateFilter"
+              value={stateFilter}
+              onChange={(e) => setStateFilter(e.target.value)}
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
+            >
+              <option value="All">All</option>
+              <option value="Completed">Completed</option>
+              <option value="Draft">Draft</option>
+              <option value="Skipped">Skipped</option>
+              <option value="Failed">Failed</option>
+              <option value="Executing">Executing</option>
+              <option value="Building">Building</option>
+            </select>
+          </div>
         </div>
 
         <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
