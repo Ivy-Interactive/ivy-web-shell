@@ -6,6 +6,7 @@ const NAV_ITEMS = [
   { label: 'Resources', href: '/resources' },
   { label: 'About', href: '/about' },
   { label: 'Pricing', href: '/pricing' },
+  { label: 'Showcase', href: '/showcase/construction-inspection' },
   { label: 'Contact', href: '/contact' },
 ];
 

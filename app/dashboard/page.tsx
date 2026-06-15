@@ -17,14 +17,28 @@ export default function DashboardPage() {
   const [stateFilter, setStateFilter] = useState('All');
   const [projectFilter, setProjectFilter] = useState('All');
 
+  // Initialize date range: 7 days ago to today
+  const getDefaultFromDate = () => {
+    const date = new Date();
+    date.setDate(date.getDate() - 7);
+    return date.toISOString().split('T')[0];
+  };
+  const getDefaultToDate = () => new Date().toISOString().split('T')[0];
+
+  const [fromDate, setFromDate] = useState(getDefaultFromDate());
+  const [toDate, setToDate] = useState(getDefaultToDate());
+
   useEffect(() => {
     async function fetchPlans() {
       try {
         setLoading(true);
-        const url = projectFilter !== 'All'
-          ? `/api/plans?project=${encodeURIComponent(projectFilter)}`
-          : '/api/plans';
-        const response = await fetch(url);
+        const params = new URLSearchParams();
+        params.append('from', fromDate);
+        params.append('to', toDate);
+        if (projectFilter !== 'All') {
+          params.append('project', projectFilter);
+        }
+        const response = await fetch(`/api/plans?${params.toString()}`);
         if (response.ok) {
           const data = await response.json();
           setPlans(data);
@@ -36,7 +50,7 @@ export default function DashboardPage() {
       }
     }
     fetchPlans();
-  }, [projectFilter]);
+  }, [fromDate, toDate, projectFilter]);
 
   const filteredPlans = stateFilter === 'All'
     ? plans
@@ -65,10 +79,38 @@ export default function DashboardPage() {
       <div className="mx-auto max-w-7xl">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-foreground">Jobs Dashboard</h1>
-          <p className="mt-2 text-muted-foreground">Plans created in the last week</p>
+          <p className="mt-2 text-muted-foreground">
+            Plans from {fromDate} to {toDate}
+          </p>
         </div>
 
-        <div className="mb-6 flex flex-wrap gap-4">
+        <div className="mb-6 flex flex-wrap items-center gap-4">
+          <div>
+            <label htmlFor="fromDate" className="mr-2 text-sm font-medium text-foreground">
+              From:
+            </label>
+            <input
+              type="date"
+              id="fromDate"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground [color-scheme:dark]"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="toDate" className="mr-2 text-sm font-medium text-foreground">
+              To:
+            </label>
+            <input
+              type="date"
+              id="toDate"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground [color-scheme:dark]"
+            />
+          </div>
+
           <div>
             <label htmlFor="projectFilter" className="mr-2 text-sm font-medium text-foreground">
               Filter by project:
@@ -85,6 +127,7 @@ export default function DashboardPage() {
               ))}
             </select>
           </div>
+
           <div>
             <label htmlFor="stateFilter" className="mr-2 text-sm font-medium text-foreground">
               Filter by state:
