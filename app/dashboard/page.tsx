@@ -14,23 +14,29 @@ interface Plan {
 export default function DashboardPage() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [stateFilter, setStateFilter] = useState('All');
 
-  useEffect(() => {
-    async function fetchPlans() {
-      try {
-        setLoading(true);
-        const response = await fetch('/api/plans');
-        if (response.ok) {
-          const data = await response.json();
-          setPlans(data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch plans:', error);
-      } finally {
-        setLoading(false);
+  const fetchPlans = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await fetch('/api/plans');
+      if (response.ok) {
+        const data = await response.json();
+        setPlans(data);
+      } else {
+        setError('Unable to load plans. The plans directory may be unavailable.');
       }
+    } catch (error) {
+      console.error('Failed to fetch plans:', error);
+      setError('Failed to connect to the server. Please try again later.');
+    } finally {
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
     fetchPlans();
   }, []);
 
@@ -61,6 +67,18 @@ export default function DashboardPage() {
           <h1 className="text-4xl font-bold text-foreground">Jobs Dashboard</h1>
           <p className="mt-2 text-muted-foreground">Plans created in the last week</p>
         </div>
+
+        {error && (
+          <div className="mb-6 rounded-lg border border-border bg-muted p-6">
+            <p className="mb-4 text-sm text-red-400">{error}</p>
+            <button
+              onClick={fetchPlans}
+              className="rounded-md border border-border bg-background px-4 py-2 text-sm text-foreground hover:bg-muted"
+            >
+              Retry
+            </button>
+          </div>
+        )}
 
         <div className="mb-6">
           <label htmlFor="stateFilter" className="mr-2 text-sm font-medium text-foreground">
