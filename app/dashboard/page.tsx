@@ -1,17 +1,58 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+
+interface Plan {
+  id: string;
+  title: string;
+  state: string;
+  project: string;
+  created: string;
+  updated: string;
+}
+
 export default function DashboardPage() {
-  const plans = [
-    { id: '00011', title: 'Change hero title from collaboration to coding', state: 'Completed', project: 'ivy-web-shell' },
-    { id: '00008', title: 'Add Background Music To Landing Page', state: 'Completed', project: 'ivy-web-shell' },
-    { id: '00007', title: 'Add Team Section to Start Page', state: 'Completed', project: 'ivy-web-shell' },
-    { id: '00006', title: 'Change Header Download Button From Green To White', state: 'Completed', project: 'ivy-web-shell' },
-    { id: '00005', title: 'Header Text Color Swap', state: 'Completed', project: 'ivy-web-shell' },
-    { id: '00004', title: 'Show GitHub Star Count With Filled Green Star Icon', state: 'Completed', project: 'ivy-web-shell' },
-    { id: '00009', title: 'Replace Placeholder Background Music With Real Asset', state: 'Skipped', project: 'ivy-web-shell' },
-    { id: '00003', title: 'Add Button To Header', state: 'Skipped', project: 'ivy-web-shell' },
-  ];
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [stateFilter, setStateFilter] = useState('All');
+
+  useEffect(() => {
+    async function fetchPlans() {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/plans');
+        if (response.ok) {
+          const data = await response.json();
+          setPlans(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch plans:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchPlans();
+  }, []);
+
+  const filteredPlans = stateFilter === 'All'
+    ? plans
+    : plans.filter(p => p.state === stateFilter);
 
   const completedCount = plans.filter(p => p.state === 'Completed').length;
   const skippedCount = plans.filter(p => p.state === 'Skipped').length;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background px-4 py-12">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold text-foreground">Jobs Dashboard</h1>
+            <p className="mt-2 text-muted-foreground">Loading plans...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background px-4 py-12">
@@ -21,10 +62,32 @@ export default function DashboardPage() {
           <p className="mt-2 text-muted-foreground">Plans created in the last week</p>
         </div>
 
+        <div className="mb-6">
+          <label htmlFor="stateFilter" className="mr-2 text-sm font-medium text-foreground">
+            Filter by state:
+          </label>
+          <select
+            id="stateFilter"
+            value={stateFilter}
+            onChange={(e) => setStateFilter(e.target.value)}
+            className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
+          >
+            <option value="All">All</option>
+            <option value="Completed">Completed</option>
+            <option value="Draft">Draft</option>
+            <option value="Skipped">Skipped</option>
+            <option value="Failed">Failed</option>
+            <option value="Executing">Executing</option>
+            <option value="Building">Building</option>
+          </select>
+        </div>
+
         <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="rounded-lg border border-border bg-muted p-6">
-            <div className="text-3xl font-bold text-foreground">{plans.length}</div>
-            <div className="mt-1 text-sm text-muted-foreground">Total Plans</div>
+            <div className="text-3xl font-bold text-foreground">{filteredPlans.length}</div>
+            <div className="mt-1 text-sm text-muted-foreground">
+              {stateFilter === 'All' ? 'Total Plans' : `${stateFilter} Plans`}
+            </div>
           </div>
           <div className="rounded-lg border border-border bg-muted p-6">
             <div className="text-3xl font-bold text-accent">{completedCount}</div>
@@ -37,7 +100,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {plans.map((plan) => (
+          {filteredPlans.map((plan) => (
             <div
               key={plan.id}
               className="rounded-lg border border-border bg-muted p-6 transition-colors hover:border-accent/50"
