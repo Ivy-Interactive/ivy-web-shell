@@ -15,6 +15,7 @@ export default function DashboardPage() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [stateFilter, setStateFilter] = useState('All');
+  const [projectFilter, setProjectFilter] = useState('All');
 
   // Initialize date range: 7 days ago to today
   const getDefaultFromDate = () => {
@@ -31,7 +32,13 @@ export default function DashboardPage() {
     async function fetchPlans() {
       try {
         setLoading(true);
-        const response = await fetch(`/api/plans?from=${fromDate}&to=${toDate}`);
+        const params = new URLSearchParams();
+        params.append('from', fromDate);
+        params.append('to', toDate);
+        if (projectFilter !== 'All') {
+          params.append('project', projectFilter);
+        }
+        const response = await fetch(`/api/plans?${params.toString()}`);
         if (response.ok) {
           const data = await response.json();
           setPlans(data);
@@ -43,11 +50,13 @@ export default function DashboardPage() {
       }
     }
     fetchPlans();
-  }, [fromDate, toDate]);
+  }, [fromDate, toDate, projectFilter]);
 
   const filteredPlans = stateFilter === 'All'
     ? plans
     : plans.filter(p => p.state === stateFilter);
+
+  const projects = [...new Set(plans.map(p => p.project))].sort();
 
   const completedCount = plans.filter(p => p.state === 'Completed').length;
   const skippedCount = plans.filter(p => p.state === 'Skipped').length;
@@ -100,6 +109,23 @@ export default function DashboardPage() {
               onChange={(e) => setToDate(e.target.value)}
               className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground [color-scheme:dark]"
             />
+          </div>
+
+          <div>
+            <label htmlFor="projectFilter" className="mr-2 text-sm font-medium text-foreground">
+              Filter by project:
+            </label>
+            <select
+              id="projectFilter"
+              value={projectFilter}
+              onChange={(e) => setProjectFilter(e.target.value)}
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
+            >
+              <option value="All">All</option>
+              {projects.map(project => (
+                <option key={project} value={project}>{project}</option>
+              ))}
+            </select>
           </div>
 
           <div>
