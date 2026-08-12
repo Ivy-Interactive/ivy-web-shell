@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 interface Plan {
   id: string;
@@ -29,7 +29,7 @@ export default function DashboardPage() {
   const [fromDate, setFromDate] = useState(getDefaultFromDate());
   const [toDate, setToDate] = useState(getDefaultToDate());
 
-  const fetchPlans = async () => {
+  const fetchPlans = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -52,11 +52,11 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fromDate, toDate, projectFilter]);
 
   useEffect(() => {
     fetchPlans();
-  }, [fromDate, toDate, projectFilter]);
+  }, [fetchPlans]);
 
   const filteredPlans = stateFilter === 'All'
     ? plans
